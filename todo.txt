@@ -1,0 +1,8 @@
+To-do list:
+Make a pause button (opens menu) -- properly integrated, see below
+Properly integrate side butttons (should be their own pixi container, have proper pointerdown & up feedback, be redone so less pixelated)
+Create displays for stats -- build, speed, etc. for each player
+Create a UI element that says which player is currently playing
+Create that tooltip thing -- informs you of which button you have selected, and what its associated cost will be
+Cretae a lil arrow on the left which tells you which button you have pressed (and is current player's color ?? )
+Create literally any animations, whoopsies

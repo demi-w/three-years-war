@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="prefetch" href="/fonts/VulfSans/Web/Vulf_Sans-Medium.ttf" as="font">
+    <title>3 Years War</title>
+    <link rel="stylesheet" type="text/css" href="/fonts.css">
+  </head>
+    <script type='text/javascript' src='fontdetect.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.0.3/pixi.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="FileSaver.js"></script>
+    <script src="gameLogic.js"></script>
+    <script src="seedrandom.min.js"></script>
+    <script src="client.js"></script>
+  <body>
+    <script>
+document.addEventListener("DOMContentLoaded", function(event) {
+          FontDetect.onFontLoaded ('Vulf Mono', loadClient, console.log, {msTimeout: 3000});
+      });
+
+    </script>
+    </body>
+  <!--<div>hello</div> -->
+</html>

@@ -1,0 +1,18 @@
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: black;
+      }
+      @font-face {
+        font-family: 'Vulf Mono';
+          src:url("/fonts/VulfSans/Web/Vulf_Sans-Medium.ttf");
+        }
+        div {
+          font-family: 'Vulf Mono';
+        }

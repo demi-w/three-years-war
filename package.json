@@ -1,0 +1,13 @@
+{
+    "name": "3 Years War",
+    "version": "0.0.1",
+    "description": "A board game made for reasons I am unaware of",
+    "dependencies": {
+        "express": "^4.15.2",
+        "seedrandom": "^3.0.5",
+        "socket.io": "^2.3.0"
+    },
+    "devDependencies": {
+        "@types/webpack-env": "^1.15.2"
+    }
+}
