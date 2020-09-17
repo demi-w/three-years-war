@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
+const PORT = process.env.PORT || 5000
 
 var queueList = [];
 var matchC = 0;
@@ -64,8 +65,8 @@ function leaveQueue(socket){
 function leaveGame(socket){
   socket.to(Object.keys(socket.rooms)[1]).emit("matchClosed")
 }
-http.listen(1339, () => {
-  console.log('listening on *:1339');
+http.listen(PORT, () => {
+  console.log('listening on *:' + PORT.toString());
 });
 function update(){
   console.clear()
