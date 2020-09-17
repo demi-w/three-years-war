@@ -1,5 +1,6 @@
 {
-    "name": "3 Years War",
+    "name": "three-years-war",
+    "main": "server.js",
     "version": "0.0.1",
     "description": "A board game made for reasons I am unaware of",
     "dependencies": {
