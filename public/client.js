@@ -1,35 +1,39 @@
 
-function loadClient(){
-    PIXI.settings.RESOLUTION = 2
+function loadClient(){ //A little hideous, but we need the script to be loaded after something else loads, so 🤷‍♂️
+
+//PIXI config
+
+PIXI.settings.RESOLUTION = 4 //Internal resolution
+//Logical height and width are the max units used in the canvas, ex. (275,225) is the center of the screen when creating an object
+// Logic behind this was each tile is 50x50 units, with 100px either side for ui
+// Did it work ? 450 / 8 = 56.25, so uh don't think about it too hard
+var mainTimer = 0;
+const logicalWidth = 550;
+const logicalHeight = 450;
+const colors = {
+    background : 0x000000,
+    //background : 0x5a855d,
+    playerChain : [0x351212,0x534c24,0x885e37,0x442f1b,0x373737],
+    players : [0x692424,0xa69849],
+    chain : 0x000000,
+    resource : [0xdbdbdb,0xe0a041,0x4184e0],
+    unusedResource : [0x6d6d6d, 0x705021, 0x214270],
+    uiLight : 0xa4c2f4,
+    uiDark : 0x3c78d8
+}
+var goonList = []
+var spiralList = []
+var winMenus = []
+
+//Setting up keyboard shortcuts
+
 let keyObject = keyboard("Escape");
 keyObject.press = () => {
     openGameMenu();
 }
-  Array.prototype.remove = function() {
-    var what, a = arguments, L = a.length, ax;
-    while (L && this.length) {
-        what = a[--L];
-        while ((ax = this.indexOf(what)) !== -1) {
-            this.splice(ax, 1);
-        }
-    }
-    return this;
-};
-function toggleFullscreen(){
-    if(!document.fullscreenElement){
-        document.getElementsByTagName('canvas')[0].requestFullscreen();
-    }else{
-        document.exitFullscreen();
-    }
-}
-function openGameMenu(){
-    if(Area.curArea == Area.areas.game && gfx.online){
-        openMenu(onlineMenu)
-    }
-    if(Area.curArea == Area.areas.game && !gfx.online){
-        openMenu(gameMenu)
-    }
-}
+
+//Class declarations
+
 class ReplayManager {
     static actionTypes = {
         button : 0,
@@ -246,59 +250,12 @@ class Area { //The AMOUNT of infrastructure needed to make a game i s2g
                 openMenu(winMenus[index2])
                 break;
             case Area.areas.tutorial:
-
+                tutorialSlide = -1
+                nextTutorialSlide()
                 break;
         }
     }
 }
-//another nasty prerequesite (i can't spell it's like 1:30 ok)
-function keyboard(value) {
-    let key = {};
-    key.value = value;
-    key.isDown = false;
-    key.isUp = true;
-    key.press = undefined;
-    key.release = undefined;
-    //The `downHandler`
-    key.downHandler = event => {
-      if (event.key === key.value) {
-        if (key.isUp && key.press) key.press();
-        key.isDown = true;
-        key.isUp = false;
-        event.preventDefault();
-      }
-    };
-  
-    //The `upHandler`
-    key.upHandler = event => {
-      if (event.key === key.value) {
-        if (key.isDown && key.release) key.release();
-        key.isDown = false;
-        key.isUp = true;
-        event.preventDefault();
-      }
-    };
-  
-    //Attach event listeners
-    const downListener = key.downHandler.bind(key);
-    const upListener = key.upHandler.bind(key);
-    
-    window.addEventListener(
-      "keydown", downListener, false
-    );
-    window.addEventListener(
-      "keyup", upListener, false
-    );
-    
-    // Detach event listeners
-    key.unsubscribe = () => {
-      window.removeEventListener("keydown", downListener);
-      window.removeEventListener("keyup", upListener);
-    };
-    
-    return key;
-  }
-
 
 class Menu {
     static objects = {
@@ -462,10 +419,14 @@ class Menu {
                         pixelsDown += bConfig.yPadding*2 + radius
                         break;
                     case Menu.objects.text:
-                        let textMetrics = PIXI.TextMetrics.measureText(submenus[i].name, style)
+                        let ourStyle = new PIXI.TextStyle({fontFamily : 'Vulf Mono', fontSize: 28, fill : 0xFFFFFF, align : 'left', padding : 3, wordWrap : true, wordWrapWidth : (rect.width - bConfig.xPadding)*2})
+                        if(curList[j].color != null){
+                            ourStyle.fill = curList[j].color
+                        }
+                        let textMetrics = PIXI.TextMetrics.measureText(curList[j].text, ourStyle)
                         textMetrics.height /= 2
-                        let textObj = new PIXI.Text(curList[j].text,style);
-                        textObj.anchor.set(0.5,-0.25)
+                        let textObj = new PIXI.Text(curList[j].text,ourStyle);
+                        textObj.anchor.set(0.5,0)
                         textObj.position.set(rect.x + rect.width/2,rect.y + pixelsDown)
                         textFix(textObj)
                         submenus[i].objects.addChild(textObj)
@@ -532,6 +493,7 @@ class Menu {
                 
             }
             this.headerChange(0)
+            closeMenu(this)
         }
     }
     headerChange(index){
@@ -551,49 +513,7 @@ class Menu {
         parent.bar.scale.set(cur/max,1);
     }
 }
-//button functions (buttonDown is a global, without it someone could pointerdown on one and pointerup on the other)
-var buttonDown = null
-function closeMenu(menu){
-    menu.gfx.visible = false
-}
-function openMenu(menu){
-    menu.gfx.visible = true
-}
-function reset(){
-    if(gm != null){
-        gm.destroy()
-    }
-    gm = new GameManager();
-}
-function buttonMouseDown(e){
-    self = e.target.button
-    self.shadow.visible = false
-    self.gfx.position.x = self.bConfig.dShadowSize
-    self.gfx.position.y = self.bConfig.dShadowSize
-    buttonDown = self
-}
-function buttonMouseUp(e){
-    self = e.target.button
-    if(buttonDown == self){
-        self.shadow.visible = true
-        self.gfx.position.x = 0
-        self.gfx.position.y = 0
-        self.onClick(self.args)
-    }
-    buttonDown = null
-}
-function buttonUpOutside(e){
-    self = e.currentTarget.button
-    if(buttonDown == self){
-        self.shadow.visible = true
-        self.gfx.position.x = 0
-        self.gfx.position.y = 0
-    }
-    buttonDown = null
-}
-function headerChange(e,menu){
-    menu.headerChange(e.currentTarget.hIndex)
-}
+
 class ObjList {
     constructor(name,objList = []){
         this.name = name
@@ -619,6 +539,7 @@ class Graphics {
         this.stage.sortableChildren = true;
         this.stage.interactive = true;
         this.gamegfx = new PIXI.Container();
+        this.gamegfx.sortableChildren = true
         this.stage.addChild(this.gamegfx)
         this.gameButtons = new PIXI.Container();
         this.stage.addChild(this.gameButtons)
@@ -813,6 +734,7 @@ class Graphics {
         }
         //this.gamegfx.destroy();
         this.gamegfx = new PIXI.Container()
+        this.gamegfx.sortableChildren = true;
         this.stage.addChild(this.gamegfx)
     }
     updateStats(){
@@ -825,7 +747,76 @@ class Graphics {
         Area.changeArea(Area.areas.winScreen,windex);
     }
 }
+
+//helper functions
+
+function toggleFullscreen(){
+    if(!document.fullscreenElement){
+        document.body.requestFullscreen();
+    }else{
+        document.exitFullscreen();
+    }
+}
+function toggleMenu(menu){
+    if(menu.gfx.visible){
+        closeMenu(menu)
+    }else{
+        openMenu(menu)
+    }
+}
+function openGameMenu(){
+    if(Area.curArea == Area.areas.game && gfx.online){
+        toggleMenu(onlineMenu)
+    }
+    if(Area.curArea == Area.areas.game && !gfx.online){
+        toggleMenu(gameMenu)
+    }
+}
+var buttonDown = null
+function closeMenu(menu){
+    menu.gfx.visible = false
+}
+function openMenu(menu){
+    menu.gfx.visible = true
+}
+function reset(){
+    if(gm != null){
+        gm.destroy()
+    }
+    gm = new GameManager();
+}
+function buttonMouseDown(e){
+    self = e.target.button
+    self.shadow.visible = false
+    self.gfx.position.x = self.bConfig.dShadowSize
+    self.gfx.position.y = self.bConfig.dShadowSize
+    buttonDown = self
+}
+function buttonMouseUp(e){
+    self = e.target.button
+    if(buttonDown == self){
+        self.shadow.visible = true
+        self.gfx.position.x = 0
+        self.gfx.position.y = 0
+        self.onClick(self.args)
+    }
+    buttonDown = null
+}
+function buttonUpOutside(e){
+    self = e.currentTarget.button
+    if(buttonDown == self){
+        self.shadow.visible = true
+        self.gfx.position.x = 0
+        self.gfx.position.y = 0
+    }
+    buttonDown = null
+}
+function headerChange(e,menu){
+    menu.headerChange(e.currentTarget.hIndex)
+}
 function buttonPress(fuckyou = null,otherIndex = null){
+    if((gameMenu.gfx.visible || onlineMenu.gfx.visible)  && !gfx.online)
+    return
     if(otherIndex != null){
         gfx.selectedButton = otherIndex
         this.indexx = otherIndex
@@ -893,17 +884,6 @@ function tilePress(tile = null,recieved = false){ //recieved via network
     }
     gm.playerOutline()
 }
-const colors = {
-    background : 0x000000,
-    //background : 0x5a855d,
-    playerChain : [0x351212,0x534c24,0x885e37,0x442f1b,0x373737],
-    players : [0x692424,0xa69849],
-    chain : 0x000000,
-    resource : [0xdbdbdb,0xe0a041,0x4184e0],
-    unusedResource : [0x6d6d6d, 0x705021, 0x214270],
-    uiLight : 0xa4c2f4,
-    uiDark : 0x3c78d8
-}
 function textFix(text){
     text.scale.set(0.5,0.5)
     text.resolution = 2
@@ -926,10 +906,42 @@ function forfeit(){
     socket.emit("leftgame")
     Area.changeArea(Area.areas.winScreen,(1+socket.curPlayer)%2)
 }
-//Initialization of renderer
-const logicalWidth = 550;
-const logicalHeight = 450;
-var mainTimer = 0;
+var tutorialSlide = 0
+var tutorialObjects = []
+function nextTutorialSlide(){
+    tutorialSlide += 1
+    if(tutorialSlide != 0){
+        closeMenu(slides[tutorialSlide-1])
+    }
+    openMenu(slides[tutorialSlide])
+    switch (tutorialSlide){
+        case 1:
+            for(var i = 0; i < 4; i++){
+                let ourTile = {
+                    pos : {x : 6, y : 2},
+                    resource : {cur : 0,max : 1,resourceType : 0},
+                    group : {owner : {index : 0}, followers : 5 * (i==2)}
+                }
+                gfx.newTile(ourTile)
+                ourTile.pResource.clear();
+                ourTile.aResource.clear();
+                tutorialObjects.push(ourTile)
+            }
+            gfx.updateResource(tutorialObjects[1])
+            gfx.newGroup(tutorialObjects[0])
+            gfx.newGroup(tutorialObjects[2])
+            tutorialObjects[2].gfx.group.clear();
+            gfx.newChain(tutorialObjects[3])
+            tutorialObjects[3].gfx.zIndex = -999
+            break;
+        case 2:
+            for(var i = 0; i < 4; i++){
+                tutorialObjects[i].gfx.introAnim.args.initPos = {x : tutorialObjects[i].gfx.position.x, y : tutorialObjects[i].gfx.position.y}
+                tutorialObjects[i].gfx.introAnim.args.endPos = {x : tutorialObjects[i].gfx.position.x, y : tutorialObjects[i].gfx.position.y + i*50}
+                tutorialObjects[i].gfx.introAnim.startAnim()
+            }
+    }
+}
 function animate() {
     for(var i = 0; i < goonList.length; i++){
         goonList[i].rotation += 0.015
@@ -940,8 +952,9 @@ function animate() {
     for(var i = 0; i < Anim.animPool.length; i++){
         Anim.animPool[i].anim()
     }
-    if(Area.curArea == Area.areas.mainMenu){
-        mainTimer += 1/25
+    if(Area.curArea == Area.areas.mainMenu || Area.curArea == Area.areas.winScreen || Area.curArea == Area.areas.onlineSetup){
+        let areMain = (Area.curArea == Area.areas.mainMenu)
+        mainTimer += 1/50 + areMain/50
         if(mainTimer >= 1){
             let maxx = getRandomInt(0,6)
             let ourTile = {
@@ -953,7 +966,7 @@ function animate() {
             gfx.newGroup(ourTile)
             goonList.remove(ourTile.gfx.goonfx)
             
-            new Anim(Anim.animFuncs.pop,null,ourTile.gfx,0.7,false,true).startAnim()
+            new Anim(Anim.animFuncs.pop,null,ourTile.gfx,0.35 + 0.35*areMain,false,true).startAnim()
             ourTile.gfx.introAnim.endAnim()
             ourTile.gfx.scale.set(0,0)
             ourTile.gfx.zIndex = -99
@@ -964,6 +977,7 @@ function animate() {
     gfx.renderer.render(gfx.stage);
     requestAnimationFrame( animate );
 }
+//resize code from stackoverflow
 const resizeHandler = () => {
     const scaleFactor = Math.min(
       window.innerWidth / logicalWidth,
@@ -975,46 +989,39 @@ const resizeHandler = () => {
     //gfx.renderer.view.style.width = `${newWidth}px`;
     //gfx.renderer.view.style.height = `${newHeight}px`;
   
-    gfx.renderer.width = newWidth/2;
-    gfx.renderer.height = newHeight/2;
+    gfx.renderer.width = newWidth/PIXI.settings.RESOLUTION;
+    gfx.renderer.height = newHeight/PIXI.settings.RESOLUTION;
 
-    gfx.renderer.resize(newWidth/2, newHeight/2);
-    gfx.stage.scale.set(scaleFactor/2); 
+    gfx.renderer.resize(newWidth/PIXI.settings.RESOLUTION, newHeight/PIXI.settings.RESOLUTION);
+    gfx.stage.scale.set(scaleFactor/PIXI.settings.RESOLUTION); 
   };
 
-var goonList = []
-var spiralList = []
-var connectingMenu = null
-var mainMenu = null
-var gameMenu = null
-var onlineMenu = null
-var connectingMenu = null
-var statusMenu = null
-var winMenus = []
-//Logical height and width are the max units used in the canvas, ex. (275,225) is the center of the screen when creating an object
-// Logic behind this was each tile is 50x50 units, with 100px either side for ui
-// Did it work ? 450 / 8 = 56.25, so uh don't think about it too hard
-window.addEventListener('resize', resizeHandler, false);
+//Graphics declaration (declared here bc menu declaration relies on them)
+
 gfx = new Graphics();
+
+// UI Declaration
+
+var slides = [
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "Welcome to the tutorial for Three Years War! Hit the next button to continue."},new Button("Next",nextTutorialSlide)])],undefined,false),
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "This is what a tile in 3 Years War looks like. This tile has four distinct parts."},new Button("Next",nextTutorialSlide)])],undefined,false),
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "The four parts of a tile are: The Chief, The Resource, The Followers, and The Chain (listed in order)."},new Button("Next",nextTutorialSlide)])],undefined,false)
+]
 gameMenu = new Menu(gfx.stage,colors.uiLight,colors.uiDark,
 [new ObjList("Menu",[new Button("Reset",reset),new Button("Main Menu",Area.changeArea,Area.areas.mainMenu),new Button("Exit Menu",closeMenu,"fuck js")]),
 new ObjList("Options",[new Button("Save Replay",ReplayManager.saveReplay),new Button("Fullscreen",toggleFullscreen)])]
 )
-closeMenu(gameMenu)
 onlineMenu = new Menu(gfx.stage,colors.uiLight,colors.uiDark,
     [new ObjList("Menu",[new Button("Forfeit",forfeit),new Button("Exit Menu",closeMenu,"fuck js")]),
     new ObjList("Options",[new Button("Save Replay",ReplayManager.saveReplay),new Button("Fullscreen",toggleFullscreen)])]
     )
-closeMenu(onlineMenu)
 mainMenu = new Menu(gfx.stage, colors.uiLight,colors.uiDark, [
-new ObjList("Menu", [new Button("Play Locally",Area.changeArea,Area.areas.game),new Button("Play Online",Area.changeArea,Area.areas.onlineSetup),new Button("Open Replay",ReplayManager.loadFromFile,true)]),
-new ObjList("Options", [new Button("Fullscreen",toggleFullscreen)])]
+new ObjList("Menu", [new Button("Play Locally",Area.changeArea,Area.areas.game),new Button("Play Online",Area.changeArea,Area.areas.onlineSetup), new Button("Play Tutorial",Area.changeArea,Area.areas.tutorial)]),
+new ObjList("Options", [new Button("Fullscreen",toggleFullscreen),new Button("Open Replay",ReplayManager.loadFromFile,true)])]
 )
-closeMenu(mainMenu)
 connectingMenu = new Menu(gfx.stage, colors.uiLight,colors.uiDark, [
 new ObjList("Menu", [{type : Menu.objects.spirals},{type : Menu.objects.text, text : "Connecting..."},new Button("Cancel",Area.changeArea,Area.areas.mainMenu)])]
 ,new PIXI.Rectangle(logicalWidth/2-100,logicalHeight/2-65,200,130),false)
-closeMenu(connectingMenu)
 statusMenus = [new Menu(gfx.stage, colors.uiLight,colors.players[0], [
     new ObjList("Player 1", [{type : Menu.objects.bar, max : 6, width : 2, title : "Build"},{type : Menu.objects.bar, max : 6, width : 2, title : "Speed"}])],new PIXI.Rectangle(475,150,70,85)
     ),
@@ -1028,10 +1035,8 @@ for(var i = 0; i < 2; i++){
         {endPos : {x : 450, y : statusMenus[i].gfx.position.y},initPos : {x : statusMenus[i].gfx.position.x, y : statusMenus[i].gfx.position.y} },statusMenus[i].gfx,1)
     statusMenus[i].gfx.position.set(800,800)
     winMenus.push(new Menu(gfx.stage,colors.uiLight,colors.uiDark,
-        [new ObjList("Menu",[{type:Menu.objects.text,text:"Player " + (i+1).toString() + " Won!"},new Button("Main Menu",Area.changeArea,Area.areas.mainMenu),new Button("Save Replay",ReplayManager.saveReplay)]),
-        new ObjList("Options",[new Button("test2")])]
-        ))
-    closeMenu(winMenus[i])
+        [new ObjList("Menu",[{type:Menu.objects.text,text:"Player " + (i+1).toString() + " Won!", color : colors.players[i] + 0x2F2F2F*i},new Button("Main Menu",Area.changeArea,Area.areas.mainMenu),new Button("Save Replay",ReplayManager.saveReplay)])]
+        ,undefined,false))
 }
 var replayMenu = new Menu(gfx.stage, colors.uiLight,colors.uiDark, [
     new ObjList("Replay", [new Button("▶",ReplayManager.playInput)])],new PIXI.Rectangle(475,50,70,60))
@@ -1040,30 +1045,26 @@ replayMenu.startAnim = new Anim(Anim.animFuncs.slide,
 replayMenu.endAnim = new Anim(Anim.animFuncs.slide,
     {endPos : {x : 450, y : replayMenu.gfx.position.y},initPos : {x : replayMenu.gfx.position.x, y : replayMenu.gfx.position.y} },replayMenu.gfx,1)
 replayMenu.gfx.position.set(5000,5000)
-    gfx.u = []
-for(var i = 0; i < 2; i++){
+gfx.u = []
+for(var i = 0; i < 2; i++){ //Adding in online U's for use later
     gfx.u.push(new PIXI.Text("U",new PIXI.TextStyle({fontFamily : 'Vulf Mono', fontSize: 28, fill : 0xFFFFFF, align : 'left'})))
     textFix(gfx.u[i])
     statusMenus[i].gfx.addChild(gfx.u[i])
     gfx.u[i].zIndex = 5000
     gfx.u[i].position.set(532,218+110*i)
     gfx.u[i].visible = false
-    //this.u[i].position.set()
 }
 
-//closeMenu(statusMenu)
-//fleshing out a tile
-//resize code from stackoverflow
+// Game initialization!
 
 resizeHandler();
-
-// run the render loop
 animate();
 gm = null;
 Area.changeArea(Area.areas.mainMenu);
-// ENDS HERE, ME
 var socket = io();
-//ReplayManager.loadReplay()
+window.addEventListener('resize', resizeHandler, false);
+
+//Networking
 
 socket.on('connect', () => {
     console.log("connected")
