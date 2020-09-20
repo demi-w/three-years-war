@@ -1034,6 +1034,7 @@ for(var i = 0; i < 2; i++){
     statusMenus[i].endAnim = new Anim(Anim.animFuncs.slide,
         {endPos : {x : 450, y : statusMenus[i].gfx.position.y},initPos : {x : statusMenus[i].gfx.position.x, y : statusMenus[i].gfx.position.y} },statusMenus[i].gfx,1)
     statusMenus[i].gfx.position.set(800,800)
+    open(statusMenus[i])
     winMenus.push(new Menu(gfx.stage,colors.uiLight,colors.uiDark,
         [new ObjList("Menu",[{type:Menu.objects.text,text:"Player " + (i+1).toString() + " Won!", color : colors.players[i] + 0x2F2F2F*i},new Button("Main Menu",Area.changeArea,Area.areas.mainMenu),new Button("Save Replay",ReplayManager.saveReplay)])]
         ,undefined,false))
