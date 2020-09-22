@@ -280,9 +280,9 @@ class Player{ //Calls to player actions don't assume trust (i.e., I could try to
                     this.groups -= 1
                     destTile.group = null
                 }else{
-                    destTile.group = nomadicGroup
-                    destTile.group.owner.groups -= 1
                     destTile.group.followers -= 1
+                    destTile.group.owner.groups -= 1
+                    destTile.group = nomadicGroup
                 }
                 if(destTile.chain != null){
                     destTile.chain.chainCheck()
