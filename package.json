@@ -11,6 +11,7 @@
     "description": "A board game made for reasons I am unaware of",
     "dependencies": {
         "express": "^4.15.2",
+        "pixi.js-legacy": "^5.3.3",
         "seedrandom": "^3.0.5",
         "socket.io": "^2.3.0"
     },

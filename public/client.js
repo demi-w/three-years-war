@@ -1,9 +1,9 @@
-
+var PIXI = require("pixi.js-legacy")
 function loadClient(){ //A little hideous, but we need the script to be loaded after something else loads, so 🤷‍♂️
 
 //PIXI config
 
-PIXI.settings.RESOLUTION = 4 //Internal resolution
+//PIXI.settings.RESOLUTION = 0.1 //Internal resolution
 //Logical height and width are the max units used in the canvas, ex. (275,225) is the center of the screen when creating an object
 // Logic behind this was each tile is 50x50 units, with 100px either side for ui
 // Did it work ? 450 / 8 = 56.25, so uh don't think about it too hard
@@ -532,7 +532,7 @@ class Graphics {
     constructor(){
         
         this.renderer = PIXI.autoDetectRenderer(logicalHeight, logicalWidth, { antialias: true, roundPixels: true, resolution: 2});
-        PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
+        //PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
         document.body.appendChild(this.renderer.view);
         // create the root of the scene graph
         this.stage = new PIXI.Container();
