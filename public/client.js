@@ -476,7 +476,7 @@ class Menu {
                         barShadow.beginFill(0x000000);
                         barShadow.drawRect(bConfig.xPadding/2,-curList[j].width,barWidth,curList[i].width*2)
 
-                        bar.beginFill(0xFFFFFF);
+                        bar.beginFill(curList[j].barColor != null ? curList[j].barColor : 0xFFFFFF);
                         bar.drawRect(bConfig.xPadding/2,-curList[j].width,barWidth,curList[i].width*2)
                         this.barUpdate(barParent,5,6)
                         pixelsDown += curList[j].width*3
@@ -1004,7 +1004,7 @@ gfx = new Graphics();
 
 var slides = [
     new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "Welcome to the tutorial for Three Years War! Hit the next button to continue."},new Button("Next",nextTutorialSlide)])],undefined,false),
-    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "This is what a tile in 3 Years War looks like. This tile has four distinct parts."},new Button("Next",nextTutorialSlide)])],undefined,false),
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "This is what a typical game in Three Years War looks like."},new Button("Next",nextTutorialSlide)])],undefined,false),
     new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "The four parts of a tile are: The Chief, The Resource, The Followers, and The Chain (listed in order)."},new Button("Next",nextTutorialSlide)])],undefined,false)
 ]
 gameMenu = new Menu(gfx.stage,colors.uiLight,colors.uiDark,
@@ -1023,10 +1023,10 @@ connectingMenu = new Menu(gfx.stage, colors.uiLight,colors.uiDark, [
 new ObjList("Menu", [{type : Menu.objects.spirals},{type : Menu.objects.text, text : "Connecting..."},new Button("Cancel",Area.changeArea,Area.areas.mainMenu)])]
 ,new PIXI.Rectangle(logicalWidth/2-100,logicalHeight/2-65,200,130),false)
 statusMenus = [new Menu(gfx.stage, colors.uiLight,colors.players[0], [
-    new ObjList("Player 1", [{type : Menu.objects.bar, max : 6, width : 2, title : "Build"},{type : Menu.objects.bar, max : 6, width : 2, title : "Speed"}])],new PIXI.Rectangle(475,150,70,85)
+    new ObjList("Player 1", [{type : Menu.objects.bar, max : 6, width : 2, title : "Build", barColor : colors.resource[1]},{type : Menu.objects.bar, max : 6, width : 2, title : "Speed", barColor : colors.resource[2]}])],new PIXI.Rectangle(475,150,70,85)
     ),
     new Menu(gfx.stage, colors.uiLight,colors.players[1], [
-        new ObjList("Player 2", [{type : Menu.objects.bar, max : 6, width : 2, title : "Build"},{type : Menu.objects.bar, max : 6, width : 2, title : "Speed"}])],new PIXI.Rectangle(475,260,70,85))
+        new ObjList("Player 2", [{type : Menu.objects.bar, max : 6, width : 2, title : "Build", barColor : colors.resource[1]},{type : Menu.objects.bar, max : 6, width : 2, title : "Speed", barColor : colors.resource[2]}])],new PIXI.Rectangle(475,260,70,85))
 ]
 for(var i = 0; i < 2; i++){
     statusMenus[i].startAnim = new Anim(Anim.animFuncs.slide,
