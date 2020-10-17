@@ -102,7 +102,9 @@ class Anim {
         slide : 0,
         fade : 1,
         endGame : 2,
-        pop : 3
+        pop : 3,
+        zoomIn : 4,
+        zoomOut : 5
     }
     static animPool = [];
     constructor (animFunc,args,object,speed,infinite = false,destroyOnFinish = false){
@@ -119,9 +121,9 @@ class Anim {
     }
     anim(){
         this.progress += 1/60*this.speed //Should change this to adjust for varying frame times 🤷‍♂️
+        let y = (this.progress > 0.5 ? -1*(2*this.progress-2)**2 + 2 : (2*this.progress)**2)/2
         switch(this.animFunc){
             case Anim.animFuncs.slide: //Args : initPos, endPos,
-                let y = (this.progress > 0.5 ? -1*(2*this.progress-2)**2 + 2 : (2*this.progress)**2)/2
                 this.object.position.set(this.args.initPos.x + (this.args.endPos.x-this.args.initPos.x)*y,
                 this.args.initPos.y + (this.args.endPos.y-this.args.initPos.y)*y)
                 break;
@@ -130,9 +132,21 @@ class Anim {
                     this.args[i].scale.x = Math.min(Math.max(this.progress*1.8 - Math.abs(i-4)/5,0),1)
                     console.log(this.args[i].scale.x)
                 }   
+                break;
             case Anim.animFuncs.pop:
                 let yy = Math.sin(this.progress*Math.PI)*1.1;
                 this.object.scale.set(yy,yy); 
+                break;
+            case Anim.animFuncs.zoomIn:
+                this.object.scale.set(1.5 - 0.5*y,1.5 - 0.5*y)
+                this.object.position.set(this.args.initPos.x - this.args.size.x*(1-y)*0.875,this.args.initPos.y - this.args.size.y*(1-y)*0.875)
+                this.object.alpha = this.progress
+                break;
+            case Anim.animFuncs.zoomOut:
+                this.object.scale.set(1 + 0.5*y,1 + 0.5*y)
+                this.object.position.set(this.args.initPos.x - this.args.size.x*y*0.875,this.args.initPos.y - this.args.size.y*y*0.875)
+                this.object.alpha = 1-this.progress
+                break;
         }
         if(this.progress >= 1){
             this.endAnim()
@@ -273,7 +287,6 @@ class Menu {
         this.submenus = submenus //Ensures we can actually access what makes up the menu
 
         this.bars = []
-
         this.gfx = new PIXI.Container(); //Root menu gfx
         this.gfx.sortableChildren = true //for headers
         this.gfx.zIndex = 1
@@ -916,7 +929,7 @@ function nextTutorialSlide(){
     openMenu(slides[tutorialSlide])
     switch (tutorialSlide){
         case 1:
-            for(var i = 0; i < 4; i++){
+            /*for(var i = 0; i < 4; i++){
                 let ourTile = {
                     pos : {x : 6, y : 2},
                     resource : {cur : 0,max : 1,resourceType : 0},
@@ -932,14 +945,39 @@ function nextTutorialSlide(){
             gfx.newGroup(tutorialObjects[2])
             tutorialObjects[2].gfx.group.clear();
             gfx.newChain(tutorialObjects[3])
-            tutorialObjects[3].gfx.zIndex = -999
+            tutorialObjects[3].gfx.zIndex = -999*/
+            Area._loadArea(Area.areas.game)
             break;
-        case 2:
+        case 3: // The actions
+            /*
             for(var i = 0; i < 4; i++){
                 tutorialObjects[i].gfx.introAnim.args.initPos = {x : tutorialObjects[i].gfx.position.x, y : tutorialObjects[i].gfx.position.y}
                 tutorialObjects[i].gfx.introAnim.args.endPos = {x : tutorialObjects[i].gfx.position.x, y : tutorialObjects[i].gfx.position.y + i*50}
                 tutorialObjects[i].gfx.introAnim.startAnim()
-            }
+            }*/
+            tutorialObjects.push(new PIXI.Container())
+            tutorialObjects.push(new PIXI.Graphics())
+            tutorialObjects[1].lineStyle(4,0xc4ad29)
+            tutorialObjects[1].beginFill(0xc4ad29,0.2)
+            tutorialObjects[1].drawRect(0,0,60,70*6-10)
+            tutorialObjects[1].fadeIn = new Anim(Anim.animFuncs.zoomIn,{initPos : {x:15,y:20},size: {x:60,y:70*6-10}},tutorialObjects[1],1)
+            tutorialObjects[1].fadeIn.startAnim()
+            gfx.stage.addChild(tutorialObjects[0])
+            tutorialObjects[0].addChild(tutorialObjects[1])
+            break;
+        case 4:
+            tutorialObjects[1].fadeOut = new Anim(Anim.animFuncs.zoomOut,{initPos : {x:15,y:20},size: {x:60,y:70*6-10}},tutorialObjects[1],1)
+            tutorialObjects[1].fadeOut.startAnim()
+
+            tutorialObjects.push(new PIXI.Graphics())
+            tutorialObjects[2].lineStyle(4,0xc4ad29)
+            tutorialObjects[2].beginFill(0xc4ad29,0.2)
+            tutorialObjects[2].drawRect(0,0,400,400)
+            tutorialObjects[2].fadeIn = new Anim(Anim.animFuncs.zoomIn,{initPos : {x:75,y:25},size: {x:400,y:400}},tutorialObjects[2],1)
+            tutorialObjects[2].fadeIn.startAnim()
+            tutorialObjects[0].addChild(tutorialObjects[2])
+        case 5:
+            
     }
 }
 function animate() {
@@ -1000,13 +1038,16 @@ const resizeHandler = () => {
 
 gfx = new Graphics();
 
-// UI Declaration
-
 var slides = [
     new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "Welcome to the tutorial for Three Years War! Hit the next button to continue."},new Button("Next",nextTutorialSlide)])],undefined,false),
     new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "This is what a typical game in Three Years War looks like."},new Button("Next",nextTutorialSlide)])],undefined,false),
-    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "The four parts of a tile are: The Chief, The Resource, The Followers, and The Chain (listed in order)."},new Button("Next",nextTutorialSlide)])],undefined,false)
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "There are three main sections:"},new Button("Next",nextTutorialSlide)])],undefined,false),
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "The actions"},new Button("Next",nextTutorialSlide)])],undefined,false),
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "The game board"},new Button("Next",nextTutorialSlide)])],undefined,false),
+    new Menu(gfx.stage, colors.uiLight, colors.uiDark, [new ObjList("nope",[{type : Menu.objects.text, text : "And finally, each players' resources."},new Button("Next",nextTutorialSlide)])],undefined,false)
 ]
+
+// UI Declaration
 gameMenu = new Menu(gfx.stage,colors.uiLight,colors.uiDark,
 [new ObjList("Menu",[new Button("Reset",reset),new Button("Main Menu",Area.changeArea,Area.areas.mainMenu),new Button("Exit Menu",closeMenu,"fuck js")]),
 new ObjList("Options",[new Button("Save Replay",ReplayManager.saveReplay),new Button("Fullscreen",toggleFullscreen)])]
@@ -1028,6 +1069,8 @@ statusMenus = [new Menu(gfx.stage, colors.uiLight,colors.players[0], [
     new Menu(gfx.stage, colors.uiLight,colors.players[1], [
         new ObjList("Player 2", [{type : Menu.objects.bar, max : 6, width : 2, title : "Build", barColor : colors.resource[1]},{type : Menu.objects.bar, max : 6, width : 2, title : "Speed", barColor : colors.resource[2]}])],new PIXI.Rectangle(475,260,70,85))
 ]
+//mainMenu.a = new Anim(Anim.animFuncs.zoomOut,{initPos : {x : mainMenu.gfx.position.x,y : mainMenu.gfx.position.y}, size : {x:160,y:190}},mainMenu.gfx,1)
+//mainMenu.a.startAnim()
 for(var i = 0; i < 2; i++){
     statusMenus[i].startAnim = new Anim(Anim.animFuncs.slide,
         {initPos : {x : 450, y : statusMenus[i].gfx.position.y},endPos : {x : statusMenus[i].gfx.position.x, y : statusMenus[i].gfx.position.y} },statusMenus[i].gfx,1)

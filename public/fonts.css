@@ -9,6 +9,16 @@
     justify-content: center;
     background-color: black;
   }
+  p {
+    text-align: center;
+    font-size: 60px;
+    clear: both;
+    position:static;
+  }
+  button{
+    clear: both;
+    font-size: 60px;
+  }
   @font-face {
     font-family: 'Vulf Mono';
       src:url("/fonts/VulfSans/Web/Vulf_Sans-Medium.ttf");

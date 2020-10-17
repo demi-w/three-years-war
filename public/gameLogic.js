@@ -311,9 +311,9 @@ class Player{ //Calls to player actions don't assume trust (i.e., I could try to
         }
     }
     spawnGroup(tile){
-        if(this.canPlay && tile.group == null && tile.pos.inList(this.spawnList) && this.resource.build > this.groups + 1 && this.resource.speed > this.groups + 1){
-            this.resource.build -= this.groups + 1
-            this.resource.speed -= this.groups + 1
+        if(this.canPlay && tile.group == null && tile.pos.inList(this.spawnList) && this.resource.build > this.groups - 1 && this.resource.speed > this.groups - 1){
+            this.resource.build -= this.groups - 1
+            this.resource.speed -= this.groups - 1
             tile.group = new Group(this)
             gfx.newGroup(tile)
         }

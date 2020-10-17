@@ -17,10 +17,46 @@
     <script src="client.js"></script>
   <body>
     <script>
-document.addEventListener("DOMContentLoaded", function(event) {
-          FontDetect.onFontLoaded ('Vulf Mono', loadClient, console.log, {msTimeout: 3000});
-      });
-
+  var para = 0
+  var btn = 3
+  var br = 0
+  function ignoreAndRun(){
+    document.body.removeChild(para);
+    document.body.removeChild(btn);
+    document.body.removeChild(br);
+    document.body.style.display = "flex"
+    window.removeEventListener("resize",checkChange)
+    loadClient()
+  }
+  function checkChange(){
+    if(window.innerWidth > window.innerHeight){
+      ignoreAndRun()
+    }
+  }
+	function orientationCheck(){
+		if(window.innerHeight >window.innerWidth){
+      document.body.style.display = ""
+      para = document.createElement("P");               // Create a <p> element
+      para.innerText = "Hello! It appears you're in some form of portrait mode. Please change to landscape mode to continue.";               // Insert text
+      para.style.fontFamily = "Vulf Mono"
+      para.style.color = "white"
+      document.body.appendChild(para);    
+      br = document.createElement("br");
+      document.body.appendChild(br);   
+      btn = document.createElement("BUTTON");   // Create a <button> element
+      btn.innerHTML = "Play anyway";                   // Insert text
+      btn.onclick = ignoreAndRun
+      btn.style.fontFamily = "Vulf Mono"
+      document.body.appendChild(btn);
+      window.addEventListener('resize', checkChange, false); 
+    }else{
+      loadClient()
+      console.log("uh")
+    }
+	}
+	document.addEventListener("DOMContentLoaded", function(event) {
+			  FontDetect.onFontLoaded ('Vulf Mono', orientationCheck, console.log, {msTimeout: 3000});
+		  });
     </script>
     </body>
   <!--<div>hello</div> -->
